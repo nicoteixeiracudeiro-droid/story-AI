@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="StudyAI is a study-focused tutor demo that turns homework and exam topics into clear lessons, examples, and practice."
+    />
+    <title>StudyAI - AI study tutor for homework and exams</title>
+    <link rel="stylesheet" href="style.css?v=16" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#home" aria-label="StudyAI home">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span class="brand-name">StudyAI</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#subjects">Subjects</a>
+        <a href="#difference">Difference</a>
+        <a href="#chat">Try it</a>
+        <a href="#method">Method</a>
+        <a href="#trust">Trust</a>
+        <a href="#plans">Pricing</a>
+      </nav>
+
+      <div class="topbar-actions">
+        <div class="account-status">
+          <span id="planBadge" class="badge">Free plan</span>
+          <span id="usageText">5 questions left</span>
+        </div>
+        <button id="accountButton" class="topbar-login" type="button">Log in</button>
+        <button id="logoutButton" class="topbar-login" type="button" hidden>Log out</button>
+        <a class="topbar-cta" href="#plans">Go premium</a>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="hero" aria-labelledby="heroTitle">
+        <div class="hero-content">
+          <p class="eyebrow hero-eyebrow">Study-focused tutor for homework and exams</p>
+          <h1 id="heroTitle">Turn confusing lessons into clear study wins.</h1>
+          <p class="hero-text">
+            StudyAI guides students through the idea, the method, an example, and a practice step so studying feels clear instead of chaotic.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#chat">Try 5 questions free</a>
+            <a class="secondary-link" href="#plans">Compare plans</a>
+          </div>
+          <div class="trust-row" aria-label="Main benefits">
+            <span>No account needed for the free demo</span>
+            <span>Teacher-style mini lessons</span>
+            <span>Built for studying, not general chat</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="proof-strip" aria-label="StudyAI highlights">
+        <div>
+          <strong>5 free questions</strong>
+          <span>Let students feel the value before paying.</span>
+        </div>
+        <div>
+          <strong>Study-first answers</strong>
+          <span>Every answer follows a learning path.</span>
+        </div>
+        <div>
+          <strong>Built for exams</strong>
+          <span>Clear help for revision, homework, and tests.</span>
+        </div>
+      </section>
+
+      <section id="subjects" class="subjects-section" aria-label="Subjects">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Made for real study moments</p>
+            <h2>Help when the lesson stops making sense.</h2>
+          </div>
+          <p class="section-copy">
+            StudyAI is designed for short, useful explanations that students can understand quickly and continue practicing.
+          </p>
+        </div>
+
+        <div class="subject-grid">
+          <article>
+            <span>Algebra</span>
+            <h3>Step-by-step equations</h3>
+            <p>Variables, coefficients, checks, and practice problems explained slowly.</p>
+          </article>
+          <article>
+            <span>Science</span>
+            <h3>Clear processes</h3>
+            <p>Definitions, systems, and cause-effect explanations without confusing language.</p>
+          </article>
+          <article>
+            <span>History</span>
+            <h3>Cause to consequence</h3>
+            <p>Events become easier when students see what happened and why it mattered.</p>
+          </article>
+          <article>
+            <span>English</span>
+            <h3>Writing support</h3>
+            <p>Summaries, grammar, sentence structure, and cleaner study notes.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="difference" class="difference-section" aria-label="StudyAI difference">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Why not just normal AI?</p>
+            <h2>StudyAI is focused on learning, not just answering.</h2>
+          </div>
+          <p class="section-copy">
+            General AI can do many things. StudyAI is designed to do one thing well: help students understand and practice.
+          </p>
+        </div>
+
+        <div class="difference-grid">
+          <article class="difference-column general-ai-column">
+            <span class="comparison-label muted-label">General AI chat</span>
+            <ul class="difference-list">
+              <li>You need to know how to ask the right prompt.</li>
+              <li>It can give the final answer too quickly.</li>
+              <li>Explanations can become too long or too advanced.</li>
+              <li>Practice questions are not always part of the answer.</li>
+            </ul>
+          </article>
+
+          <article class="difference-column studyai-column">
+            <span class="comparison-label">StudyAI</span>
+            <ul class="difference-list">
+              <li>Every answer is shaped like a mini lesson.</li>
+              <li>It explains the method before giving the result.</li>
+              <li>It uses student-friendly language and examples.</li>
+              <li>It ends with practice so learning continues.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="difference-takeaway">
+          <strong>The reason to choose StudyAI:</strong>
+          <span>Students do not pay for another chatbot. They pay for a study routine that feels simple, focused, and useful during homework and exams.</span>
+        </div>
+      </section>
+
+      <section id="chat" class="product-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Interactive product demo</p>
+            <h2>Ask a question. Get a lesson you can use.</h2>
+          </div>
+          <button id="resetButton" class="icon-button" type="button" title="Reset demo" aria-label="Reset demo">
+            Reset
+          </button>
+        </div>
+
+        <div class="app-grid">
+          <section class="workspace" aria-labelledby="chatTitle">
+            <div class="chat-header">
+              <div>
+                <p class="eyebrow">StudyAI Tutor</p>
+                <h3 id="chatTitle">Lesson chat</h3>
+              </div>
+              <span id="aiModeText" class="live-pill">Checking API</span>
+            </div>
+
+            <div id="chatMessages" class="chat-messages" aria-live="polite">
+              <article class="message assistant">
+                <strong>StudyAI</strong>
+                <p>Hi. Write a topic or homework question and I will explain it like a teacher: key idea, steps, example, and practice.</p>
+              </article>
+            </div>
+
+            <form id="questionForm" class="question-form">
+              <div class="prompt-row" aria-label="Example questions">
+                <button class="prompt-chip" type="button" data-prompt="Help me study for an algebra test">Algebra test</button>
+                <button class="prompt-chip" type="button" data-prompt="Explain fractions like I am 12 years old">Fractions</button>
+                <button class="prompt-chip" type="button" data-prompt="How do I find 20% of 80?">Percentages</button>
+                <button class="prompt-chip" type="button" data-prompt="Explain photosynthesis for a science test">Photosynthesis</button>
+                <button class="prompt-chip" type="button" data-prompt="Teach me how to write a summary">Summary</button>
+              </div>
+              <label for="questionInput">Your question</label>
+              <div class="input-row">
+                <textarea
+                  id="questionInput"
+                  name="question"
+                  rows="3"
+                  placeholder="Example: Help me study for an algebra test"
+                  required
+                ></textarea>
+                <button id="askButton" type="submit">Ask</button>
+              </div>
+              <p id="limitWarning" class="limit-warning" hidden>
+                You have used your free questions. Premium must be connected to Stripe before more questions can be unlocked.
+              </p>
+            </form>
+          </section>
+
+          <aside id="plans" class="pricing-panel" aria-label="StudyAI plans">
+            <div class="pricing-intro">
+              <p class="eyebrow">Premium plans</p>
+              <h3>Keep learning after the free trial.</h3>
+              <p>Start free, then unlock unlimited conversations only after secure checkout is connected.</p>
+              <div class="checkout-steps" aria-label="Premium checkout steps">
+                <span>Create account</span>
+                <span>Pay with Stripe</span>
+                <span>Unlock premium</span>
+              </div>
+            </div>
+
+            <section class="plan free-plan">
+              <p class="eyebrow">Free</p>
+              <h2>Try it first</h2>
+              <p class="price small-price">0 CHF</p>
+              <ul>
+                <li>5 trial questions</li>
+                <li>Basic study chat</li>
+                <li>No account needed in this demo</li>
+              </ul>
+            </section>
+
+            <section class="plan premium-plan">
+              <p class="eyebrow">1 month</p>
+              <h2>Monthly</h2>
+              <p class="price">19.99 CHF <span>/ month</span></p>
+              <ul>
+                <li>Unlimited conversations for one month</li>
+                <li>Mini lessons and practice</li>
+                <li>Best for trying premium</li>
+              </ul>
+              <button class="premium-button" type="button" data-plan="1 month" data-cta="Start monthly">Start monthly</button>
+            </section>
+
+            <section class="plan premium-plan value-plan">
+              <div class="popular-badge">Save 10 CHF</div>
+              <p class="eyebrow">5 months</p>
+              <h2>School term</h2>
+              <p class="price">89.99 CHF <span>/ term</span></p>
+              <ul>
+                <li>Unlimited conversations for five months</li>
+                <li>Ideal for exam season</li>
+                <li>Lower price than paying monthly</li>
+              </ul>
+              <button class="premium-button" type="button" data-plan="5 months" data-cta="Start 5 months">Start 5 months</button>
+            </section>
+
+            <section class="plan premium-plan annual-plan">
+              <div class="popular-badge">Best value</div>
+              <p class="eyebrow">12 months</p>
+              <h2>Full year</h2>
+              <p class="price">179.99 CHF <span>/ year</span></p>
+              <ul>
+                <li>Unlimited conversations for twelve months</li>
+                <li>Best for constant study support</li>
+                <li>Save about 60 CHF vs monthly</li>
+              </ul>
+              <button class="premium-button" type="button" data-plan="12 months" data-cta="Start full year">Start full year</button>
+            </section>
+
+            <p class="payment-note pricing-note">Premium opens secure Stripe Checkout when Stripe test keys are configured. Premium unlocks only after Stripe confirms payment.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="method" class="method-section" aria-label="StudyAI method">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Why it works</p>
+            <h2>A structure that keeps students moving.</h2>
+          </div>
+          <p class="section-copy">
+            The goal is not to dump information. The goal is to make the next step feel obvious.
+          </p>
+        </div>
+
+        <div class="method-grid">
+          <article>
+            <span class="benefit-number">01</span>
+            <h3>Understand the idea</h3>
+            <p>StudyAI starts with the core concept, so students know what the topic means before solving anything.</p>
+          </article>
+          <article>
+            <span class="benefit-number">02</span>
+            <h3>See the method</h3>
+            <p>It breaks the process into clear steps, like a teacher writing on the board.</p>
+          </article>
+          <article>
+            <span class="benefit-number">03</span>
+            <h3>Practice immediately</h3>
+            <p>Every lesson ends with a small exercise so students can check if they really understood.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="comparison-section" aria-label="StudyAI comparison">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Why students stay</p>
+            <h2>Less searching. More learning.</h2>
+          </div>
+        </div>
+
+        <div class="comparison-grid">
+          <article>
+            <span class="comparison-label muted-label">Normal search</span>
+            <p>Long pages, random explanations, no personal next step, and no quick check that the student understood.</p>
+          </article>
+          <article class="highlight-comparison">
+            <span class="comparison-label">StudyAI</span>
+            <p>Clear mini lesson, example, practice question, and follow-up support in the same conversation.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="trust" class="trust-section" aria-label="Trust and safety">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Trust and launch readiness</p>
+            <h2>Clear rules before real payments go live.</h2>
+          </div>
+          <p class="section-copy">
+            StudyAI is set up to protect payment flow, explain limits clearly, and avoid unlocking premium before Stripe confirms payment.
+          </p>
+        </div>
+
+        <div class="trust-grid">
+          <article>
+            <span>01</span>
+            <h3>Secure checkout path</h3>
+            <p>Premium sends customers to Stripe Checkout when test keys are configured, so card details are handled by Stripe instead of your website.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Account before payment</h3>
+            <p>Students create or log in to an account before checkout, so premium can be attached to the right user after payment.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Parent-reviewed launch</h3>
+            <p>The legal pages are ready as starter pages and should be reviewed by your father before real customers are charged.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="closing-section" aria-label="Call to action">
+        <div>
+          <p class="eyebrow">Ready to study with less stress?</p>
+          <h2>Try 5 questions free, then upgrade when StudyAI becomes part of your routine.</h2>
+        </div>
+        <div class="closing-actions">
+          <a class="primary-link" href="#chat">Try it now</a>
+          <a class="secondary-link dark-link" href="#plans">See premium</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer" aria-label="Footer">
+      <div>
+        <a class="footer-brand" href="#home">StudyAI</a>
+        <p>Study-focused AI tutoring for homework, revision, and exam practice.</p>
+      </div>
+      <nav aria-label="Legal links">
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="refunds.html">Refunds</a>
+      </nav>
+    </footer>
+
+    <div id="authModal" class="auth-modal" hidden>
+      <div class="auth-backdrop" data-close-auth></div>
+      <section class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <div class="auth-header">
+          <div>
+          <p class="eyebrow">Account required</p>
+            <h2 id="authTitle">Create an account before checkout.</h2>
+          </div>
+          <button class="auth-close" type="button" aria-label="Close account window" data-close-auth>Close</button>
+        </div>
+
+        <div class="auth-plan">
+          <span>Selected plan</span>
+          <strong id="authPlanName">Premium</strong>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Account options">
+          <button id="createAccountTab" class="auth-tab active" type="button" data-auth-mode="signup">Create account</button>
+          <button id="loginTab" class="auth-tab" type="button" data-auth-mode="login">Log in</button>
+        </div>
+
+        <form id="authForm" class="auth-form">
+          <label for="authEmail">Email</label>
+          <input id="authEmail" name="email" type="email" autocomplete="email" placeholder="student@example.com" required />
+
+          <label for="authPassword">Password</label>
+          <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Minimum 6 characters" minlength="6" required />
+
+          <button id="authSubmitButton" type="submit">Create account and continue</button>
+          <p id="authMessage" class="auth-message" hidden></p>
+        </form>
+
+        <p class="auth-note">
+          Development version. Accounts are saved in the local backend database. Stripe should be tested before switching to live mode.
+        </p>
+      </section>
+    </div>
+
+    <script src="script.js?v=18"></script>
+  </body>
+</html>
