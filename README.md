@@ -49,6 +49,27 @@ Then open:
 http://localhost:5173
 ```
 
+## Deploy On Vercel
+
+This project includes `vercel.json` and `api/index.mjs` so Vercel can serve the static website and run backend API routes.
+
+In Vercel, add these environment variables:
+
+```text
+OPENAI_API_KEY=your_real_key_here
+OPENAI_MODEL=gpt-5.2
+APP_URL=https://your-vercel-domain.vercel.app
+```
+
+Stripe can be added later:
+
+```text
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret_here
+```
+
+Important: Vercel currently uses temporary serverless file storage for demo accounts. That is enough for basic testing, but production needs a real hosted database before real customers rely on accounts or premium access.
+
 ## API And Account Endpoints
 
 - `GET /api/status` - checks backend and OpenAI mode
