@@ -106,6 +106,164 @@ async function writeDatabase(database) {
   await writeFile(DB_PATH, `${JSON.stringify(normalizeDatabase(database), null, 2)}\n`);
 }
 
+function supabaseConfigured() {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+function supabaseUrl(path) {
+  return `${process.env.SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${path}`;
+}
+
+async function supabaseRequest(path, { method = "GET", body, prefer } = {}) {
+  const headers = {
+    apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+    "Content-Type": "application/json",
+  };
+
+  if (prefer) {
+    headers.Prefer = prefer;
+  }
+
+  const response = await fetch(supabaseUrl(path), {
+    body: body ? JSON.stringify(body) : undefined,
+    headers,
+    method,
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Supabase request failed: ${response.status} ${details}`);
+  }
+
+  if (response.status === 204) return null;
+  return response.json().catch(() => null);
+}
+
+function toAppUser(row) {
+  return {
+    createdAt: row.created_at,
+    email: row.email,
+    id: row.id,
+    isPremium: row.is_premium,
+    passwordHash: row.password_hash,
+    passwordIterations: row.password_iterations,
+    passwordSalt: row.password_salt,
+    premiumPlan: row.premium_plan,
+    premiumUntil: row.premium_until,
+    processedStripeSessions: Array.isArray(row.processed_stripe_sessions) ? row.processed_stripe_sessions : [],
+    questionsUsed: row.questions_used,
+    stripeCustomerId: row.stripe_customer_id,
+    updatedAt: row.updated_at,
+  };
+}
+
+function toSupabaseUser(user) {
+  return {
+    created_at: user.createdAt || new Date().toISOString(),
+    email: user.email,
+    id: user.id,
+    is_premium: Boolean(user.isPremium),
+    password_hash: user.passwordHash,
+    password_iterations: Number(user.passwordIterations),
+    password_salt: user.passwordSalt,
+    premium_plan: user.premiumPlan || null,
+    premium_until: user.premiumUntil || null,
+    processed_stripe_sessions: Array.isArray(user.processedStripeSessions) ? user.processedStripeSessions : [],
+    questions_used: Number(user.questionsUsed) || 0,
+    stripe_customer_id: user.stripeCustomerId || null,
+    updated_at: user.updatedAt || new Date().toISOString(),
+  };
+}
+
+function toAppSession(row) {
+  return {
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+    id: row.id,
+    userId: row.user_id,
+  };
+}
+
+function toSupabaseSession(session) {
+  return {
+    created_at: session.createdAt || new Date().toISOString(),
+    expires_at: session.expiresAt,
+    id: session.id,
+    user_id: session.userId,
+  };
+}
+
+async function loadDatabase() {
+  if (!supabaseConfigured()) {
+    return readDatabase();
+  }
+
+  const [users, sessions] = await Promise.all([
+    supabaseRequest("studyai_users?select=*"),
+    supabaseRequest("studyai_sessions?select=*"),
+  ]);
+
+  return normalizeDatabase({
+    sessions: (sessions || []).map(toAppSession),
+    users: (users || []).map(toAppUser),
+  });
+}
+
+async function saveDatabase(database) {
+  if (!supabaseConfigured()) {
+    await writeDatabase(database);
+    return;
+  }
+
+  const writes = [];
+
+  if (database.users.length) {
+    writes.push(
+      supabaseRequest("studyai_users?on_conflict=id", {
+        body: database.users.map(toSupabaseUser),
+        method: "POST",
+        prefer: "resolution=merge-duplicates",
+      })
+    );
+  }
+
+  if (database.sessions.length) {
+    writes.push(
+      supabaseRequest("studyai_sessions?on_conflict=id", {
+        body: database.sessions.map(toSupabaseSession),
+        method: "POST",
+        prefer: "resolution=merge-duplicates",
+      })
+    );
+  }
+
+  await Promise.all(writes);
+}
+
+async function deleteSession(sessionId) {
+  if (!sessionId) return;
+
+  if (!supabaseConfigured()) {
+    const database = await readDatabase();
+    database.sessions = database.sessions.filter((session) => session.id !== sessionId);
+    await writeDatabase(database);
+    return;
+  }
+
+  await supabaseRequest(`studyai_sessions?id=eq.${encodeURIComponent(sessionId)}`, {
+    method: "DELETE",
+  });
+}
+
+async function deleteExpiredSessions() {
+  if (!supabaseConfigured()) return;
+
+  await supabaseRequest(`studyai_sessions?expires_at=lte.${encodeURIComponent(new Date().toISOString())}`, {
+    method: "DELETE",
+  });
+}
+
 function hashPassword(password, salt = randomBytes(16).toString("hex"), iterations = PASSWORD_ITERATIONS) {
   return {
     hash: pbkdf2Sync(password, salt, iterations, 32, "sha256").toString("hex"),
@@ -210,14 +368,18 @@ function createSession(database, userId) {
 }
 
 async function getRequestContext(request) {
-  const database = await readDatabase();
+  const database = await loadDatabase();
   const sessionId = parseCookies(request)[SESSION_COOKIE];
   const now = new Date();
   const activeSessions = database.sessions.filter((session) => new Date(session.expiresAt) > now);
 
   if (activeSessions.length !== database.sessions.length) {
     database.sessions = activeSessions;
-    await writeDatabase(database);
+    if (supabaseConfigured()) {
+      await deleteExpiredSessions();
+    } else {
+      await saveDatabase(database);
+    }
   }
 
   const session = sessionId ? database.sessions.find((item) => item.id === sessionId) : null;
@@ -530,7 +692,7 @@ async function handleSignupRequest(request, response) {
       return;
     }
 
-    const database = await readDatabase();
+    const database = await loadDatabase();
     if (database.users.find((user) => user.email === email)) {
       sendJson(response, 409, { error: "This account already exists. Log in instead." });
       return;
@@ -553,7 +715,7 @@ async function handleSignupRequest(request, response) {
 
     database.users.push(user);
     const session = createSession(database, user.id);
-    await writeDatabase(database);
+    await saveDatabase(database);
 
     sendJson(response, 201, { user: publicUser(user) }, { "Set-Cookie": createSessionCookie(request, session.id) });
   } catch (error) {
@@ -567,7 +729,7 @@ async function handleLoginRequest(request, response) {
     const payload = await readJsonPayload(request);
     const email = normalizeEmail(payload.email);
     const password = String(payload.password || "");
-    const database = await readDatabase();
+    const database = await loadDatabase();
     const user = database.users.find((item) => item.email === email);
 
     if (!user || !verifyPassword(password, user)) {
@@ -577,7 +739,7 @@ async function handleLoginRequest(request, response) {
 
     const session = createSession(database, user.id);
     user.updatedAt = new Date().toISOString();
-    await writeDatabase(database);
+    await saveDatabase(database);
 
     sendJson(response, 200, { user: publicUser(user) }, { "Set-Cookie": createSessionCookie(request, session.id) });
   } catch (error) {
@@ -591,8 +753,7 @@ async function handleLogoutRequest(request, response) {
     const { database, session } = await getRequestContext(request);
 
     if (session) {
-      database.sessions = database.sessions.filter((item) => item.id !== session.id);
-      await writeDatabase(database);
+      await deleteSession(session.id);
     }
 
     sendJson(response, 200, { ok: true }, { "Set-Cookie": clearSessionCookie(request) });
@@ -634,7 +795,7 @@ async function handleStudyRequest(request, response) {
     if (user && !user.isPremium) {
       user.questionsUsed = (Number(user.questionsUsed) || 0) + 1;
       user.updatedAt = new Date().toISOString();
-      await writeDatabase(database);
+      await saveDatabase(database);
     }
 
     sendJson(response, 200, {
@@ -666,7 +827,7 @@ async function handleCheckoutRequest(request, response) {
     user.pendingStripeCheckoutSessionId = session.id;
     user.pendingStripePlan = plan;
     user.updatedAt = new Date().toISOString();
-    await writeDatabase(database);
+    await saveDatabase(database);
 
     sendJson(response, 200, {
       checkoutReady: true,
@@ -706,7 +867,7 @@ async function handleCheckoutConfirmRequest(request, response) {
     }
 
     const result = activatePremiumFromSession(database, session);
-    await writeDatabase(database);
+    await saveDatabase(database);
     sendJson(response, 200, {
       activated: result.activated,
       message: result.activated ? "Payment confirmed. Premium is active." : result.reason || "Payment is not confirmed yet.",
@@ -725,9 +886,9 @@ async function handleStripeWebhookRequest(request, response) {
     const event = JSON.parse(rawBody);
 
     if (event.type === "checkout.session.completed") {
-      const database = await readDatabase();
+      const database = await loadDatabase();
       activatePremiumFromSession(database, event.data.object);
-      await writeDatabase(database);
+      await saveDatabase(database);
     }
 
     sendJson(response, 200, { received: true });
@@ -742,7 +903,7 @@ function handleStatusRequest(response) {
 
   sendJson(response, 200, {
     backend: true,
-    databaseMode: "temporary-vercel-filesystem",
+    databaseMode: supabaseConfigured() ? "supabase" : "temporary-vercel-filesystem",
     mode: openaiConfigured ? "openai" : "fallback",
     model: process.env.OPENAI_MODEL || "gpt-5.2",
     openaiConfigured,

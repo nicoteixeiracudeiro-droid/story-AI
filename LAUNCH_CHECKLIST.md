@@ -48,7 +48,7 @@ Good next options:
 - Supabase or PostgreSQL for the real database
 - A real domain name when ready
 
-Do not rely on `data/studyai-db.json` for the final public version. It is useful for local development, but production should use a hosted database.
+Do not rely on `data/studyai-db.json` for the final public version. It is useful for local development, but production should use Supabase/Postgres through `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 
 ## Step 7 - Legal And Final Checks
 

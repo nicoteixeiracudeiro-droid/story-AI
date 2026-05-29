@@ -8,17 +8,18 @@ This is now a simple frontend plus Node backend demo using plain HTML, CSS, Java
 
 The chat sends questions to `/api/study`. The site also checks `/api/status` to show whether it is using real OpenAI mode or backend fallback mode. If `OPENAI_API_KEY` is configured, the backend can call OpenAI. If it is not configured, the backend returns a safe fallback demo answer.
 
-User accounts now work in the local backend:
+User accounts now work in the backend:
 
 - create account
 - log in
 - log out
 - session cookie
 - password hashing
-- local JSON database at `data/studyai-db.json`
+- Supabase/Postgres database in production when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are configured
+- local JSON database at `data/studyai-db.json` for local development without Supabase
 - free question usage saved per account
 
-This is good for development, but it is not the final production setup. Before launch, replace the local JSON database with a hosted database such as Supabase/Postgres, Firebase, or another managed database.
+The local JSON database is only for development. Production should use Supabase/Postgres so accounts, sessions, and free question limits do not disappear between deployments.
 
 Stripe Checkout is now wired into the backend for test mode. Premium buttons require an account first, then create a Stripe Checkout Session when `STRIPE_SECRET_KEY` is configured. Premium unlocks only after Stripe confirms payment through the webhook or through the server-side checkout confirmation after the success redirect.
 
@@ -59,6 +60,8 @@ In Vercel, add these environment variables:
 OPENAI_API_KEY=your_real_key_here
 OPENAI_MODEL=gpt-5.2
 APP_URL=https://your-vercel-domain.vercel.app
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_secret_key_here
 ```
 
 Stripe can be added later:
@@ -68,7 +71,7 @@ STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
 STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret_here
 ```
 
-Important: Vercel currently uses temporary serverless file storage for demo accounts. That is enough for basic testing, but production needs a real hosted database before real customers rely on accounts or premium access.
+Important: Vercel uses Supabase for accounts when the two Supabase environment variables are configured. If they are missing, it falls back to temporary serverless file storage, which is only for demos.
 
 ## API And Account Endpoints
 
@@ -97,6 +100,8 @@ OPENAI_API_KEY=your_real_key_here
 OPENAI_MODEL=gpt-5.2
 PORT=5173
 APP_URL=http://localhost:5173
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_secret_key_here
 ```
 
 Do not put the API key in `script.js` or `index.html`. The browser should only call `/api/study`; the backend should call OpenAI.
@@ -169,8 +174,8 @@ Premium buttons currently require a real local account first, then open Stripe C
 ## Suggested Next Steps
 
 1. Add Stripe test keys in `.env` and test with Stripe test cards.
-2. Replace the local JSON database with a hosted production database.
-3. Add a proper deployment target such as Render, Railway, Fly.io, Vercel, Netlify, or Supabase.
+2. Test Supabase account creation, login, logout, and free question limits on the live Vercel site.
+3. Add Stripe test keys in Vercel and test Stripe Checkout with test cards.
 4. Review the legal pages with a parent/adult and replace starter text.
 5. Switch Stripe from test mode to live mode only after everything is tested.
 
