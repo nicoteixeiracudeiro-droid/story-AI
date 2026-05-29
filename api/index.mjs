@@ -216,29 +216,21 @@ async function saveDatabase(database) {
     return;
   }
 
-  const writes = [];
-
   if (database.users.length) {
-    writes.push(
-      supabaseRequest("studyai_users?on_conflict=id", {
-        body: database.users.map(toSupabaseUser),
-        method: "POST",
-        prefer: "resolution=merge-duplicates",
-      })
-    );
+    await supabaseRequest("studyai_users?on_conflict=id", {
+      body: database.users.map(toSupabaseUser),
+      method: "POST",
+      prefer: "resolution=merge-duplicates",
+    });
   }
 
   if (database.sessions.length) {
-    writes.push(
-      supabaseRequest("studyai_sessions?on_conflict=id", {
-        body: database.sessions.map(toSupabaseSession),
-        method: "POST",
-        prefer: "resolution=merge-duplicates",
-      })
-    );
+    await supabaseRequest("studyai_sessions?on_conflict=id", {
+      body: database.sessions.map(toSupabaseSession),
+      method: "POST",
+      prefer: "resolution=merge-duplicates",
+    });
   }
-
-  await Promise.all(writes);
 }
 
 async function deleteSession(sessionId) {
