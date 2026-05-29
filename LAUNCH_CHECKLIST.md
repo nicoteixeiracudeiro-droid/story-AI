@@ -53,8 +53,8 @@ Do not rely on `data/studyai-db.json` for the final public version. It is useful
 ## Step 7 - Legal And Final Checks
 
 - Review `terms.html`, `privacy.html`, and `refunds.html` with a parent/adult.
-- Replace starter legal text with the final business name, address, support email, and local legal requirements.
-- Add a real support email.
+- Replace starter legal text with the final business name, address, and local legal requirements.
+- Confirm the public support email is correct: `nicoteixeiracudeiro@gmail.com`.
 - Test account creation, login, logout, free limits, premium checkout, and premium access.
 - Rotate any API keys that were pasted into chat or shared accidentally.
 - Switch Stripe from test mode to live mode only after test payments work.
