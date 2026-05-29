@@ -54,12 +54,24 @@ http://localhost:5173
 
 This project includes `vercel.json` and `api/index.mjs` so Vercel can serve the static website and run backend API routes.
 
+Current production domain:
+
+```text
+https://studyai.cards
+```
+
+Fallback Vercel URL:
+
+```text
+https://story-ai-5os6.vercel.app
+```
+
 In Vercel, add these environment variables:
 
 ```text
 OPENAI_API_KEY=your_real_key_here
 OPENAI_MODEL=gpt-5.2
-APP_URL=https://your-vercel-domain.vercel.app
+APP_URL=https://studyai.cards
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_secret_key_here
 ```
