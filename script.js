@@ -87,9 +87,12 @@ function updateInterface() {
   limitWarning.hidden = left !== 0;
 }
 
-function addMessage(type, text) {
+function addMessage(type, text, options = {}) {
   const message = document.createElement("article");
   message.className = `message ${type}`;
+  if (options.pending) {
+    message.classList.add("pending");
+  }
 
   const author = document.createElement("strong");
   author.textContent = type === "user" ? "You" : "StudyAI";
@@ -100,6 +103,8 @@ function addMessage(type, text) {
   message.append(author, paragraph);
   messages.append(message);
   messages.scrollTop = messages.scrollHeight;
+
+  return { message, paragraph };
 }
 
 function setAiMode(text, mode) {
@@ -673,8 +678,10 @@ form.addEventListener("submit", async (event) => {
   input.value = "";
   askButton.disabled = true;
   askButton.textContent = "Thinking...";
+  const pendingMessage = addMessage("assistant", "StudyAI is thinking...", { pending: true });
   const result = await getStudyAnswer(question);
-  addMessage("assistant", result.text);
+  pendingMessage.paragraph.textContent = result.text;
+  pendingMessage.message.classList.remove("pending");
 
   if (result.answered && !state.account && !state.isPremium) {
     state.questionsUsed += 1;

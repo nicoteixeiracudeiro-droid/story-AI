@@ -630,6 +630,10 @@ button:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
+.message.pending p {
+  color: var(--muted);
+}
+
 .question-form {
   padding: 20px 24px 24px;
   border-top: 1px solid var(--line);

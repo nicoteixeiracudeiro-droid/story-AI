@@ -304,17 +304,18 @@ Quality rules:
 - For writing: help plan, improve, and explain choices. Do not encourage plagiarism.
 - If a student asks for cheating on a live test, refuse briefly and offer a study-safe explanation instead.
 
-Answer format:
+Default answer format:
 Topic:
 Quick answer:
-Step-by-step explanation:
+Steps or explanation:
 Example or check:
-Common mistake:
 Practice:
-Next step:
+
+Only add "Common mistake:" or "Next step:" when it is genuinely useful.
 
 Style:
 Sound like a sharp, calm teacher. Be clear, confident, and practical.
+Keep answers compact: usually 90-180 words. Use longer answers only when the student asks for a full essay, long plan, or detailed revision guide.
 Use plain text only. Do not use LaTeX delimiters like \\(...\\) or \\[...\\], markdown tables, or raw markdown formatting. Write equations in a readable plain-text style, like x = (20 - 5) / 3.`;
 
 function buildTutorPrompt(question) {
@@ -497,10 +498,10 @@ async function getOpenAIStudyAnswer(question) {
     body: JSON.stringify({
       instructions: STUDYAI_TUTOR_INSTRUCTIONS,
       input: buildTutorPrompt(question),
-      max_output_tokens: 2500,
+      max_output_tokens: 650,
       model,
       reasoning: {
-        effort: "high",
+        effort: "none",
       },
       text: {
         format: {
