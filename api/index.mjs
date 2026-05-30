@@ -389,6 +389,62 @@ function formatNumber(number) {
   return Number(number.toFixed(3)).toString();
 }
 
+const STUDYAI_TUTOR_INSTRUCTIONS = `You are StudyAI, a premium AI study tutor for middle school, high school, and early college students.
+
+Core goal:
+Help the student understand the topic, not just copy an answer.
+
+Quality rules:
+- First decide what subject and task the student is asking about.
+- If the question is vague or has typos, make the most reasonable interpretation, say it briefly, and still give useful help.
+- If important information is missing, explain what is missing and ask one clear follow-up question at the end.
+- Use the student's language when it is obvious. Otherwise answer in clear English.
+- Keep explanations accurate, concrete, and student-friendly.
+- Avoid generic filler. Every section should teach something useful.
+- Do not invent facts, sources, quotes, formulas, or book details. If you are unsure, say what you would need to know.
+- For math: show clean steps, define symbols, include units when relevant, and verify the answer with a quick check.
+- For science: explain cause and effect, define key terms, and include a simple real-world example.
+- For history/literature: give context, explain why it matters, and separate facts from interpretation.
+- For writing: help plan, improve, and explain choices. Do not encourage plagiarism.
+- If a student asks for cheating on a live test, refuse briefly and offer a study-safe explanation instead.
+
+Answer format:
+Topic:
+Quick answer:
+Step-by-step explanation:
+Example or check:
+Common mistake:
+Practice:
+Next step:
+
+Style:
+Sound like a sharp, calm teacher. Be clear, confident, and practical.
+Use plain text only. Do not use LaTeX delimiters like \\(...\\) or \\[...\\], markdown tables, or raw markdown formatting. Write equations in a readable plain-text style, like x = (20 - 5) / 3.`;
+
+function buildTutorPrompt(question) {
+  return `Student question:
+${question}
+
+Give the best tutoring answer you can.`;
+}
+
+function extractOpenAIText(data) {
+  if (typeof data?.output_text === "string" && data.output_text.trim()) {
+    return data.output_text.trim();
+  }
+
+  const chunks = [];
+  for (const item of data?.output || []) {
+    for (const content of item?.content || []) {
+      if (content?.type === "output_text" && typeof content.text === "string") {
+        chunks.push(content.text);
+      }
+    }
+  }
+
+  return chunks.join("\n\n").trim();
+}
+
 function fallbackStudyAnswer(question) {
   const percentage = question.match(/(\d+(?:\.\d+)?)\s*%\s*(?:of|de)\s*(\d+(?:\.\d+)?)/i);
   if (percentage) {
@@ -427,28 +483,6 @@ Practice: Write one sentence explaining the topic in your own words.
 Next step: Ask a more specific homework question for a better lesson.`;
 }
 
-function buildTutorPrompt(question) {
-  return `You are StudyAI, a study-focused tutor for students.
-
-Your job:
-- Explain like a patient teacher.
-- Do not just give the final answer.
-- Use clear student-friendly language.
-- Keep the answer useful but not too long.
-- If it is math, show steps and a check.
-- End with one practice task.
-
-Always use this structure:
-Topic:
-Key idea:
-Explanation:
-Example:
-Practice:
-Next step:
-
-Student question: ${question}`;
-}
-
 async function getOpenAIStudyAnswer(question) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -461,8 +495,18 @@ async function getOpenAIStudyAnswer(question) {
   const model = process.env.OPENAI_MODEL || "gpt-5.2";
   const openaiResponse = await fetch(OPENAI_API_URL, {
     body: JSON.stringify({
+      instructions: STUDYAI_TUTOR_INSTRUCTIONS,
       input: buildTutorPrompt(question),
+      max_output_tokens: 2500,
       model,
+      reasoning: {
+        effort: "high",
+      },
+      text: {
+        format: {
+          type: "text",
+        },
+      },
     }),
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -477,8 +521,9 @@ async function getOpenAIStudyAnswer(question) {
   }
 
   const data = await openaiResponse.json();
+  const answer = extractOpenAIText(data) || fallbackStudyAnswer(question);
   return {
-    answer: data.output_text || fallbackStudyAnswer(question),
+    answer,
     source: "openai",
   };
 }
