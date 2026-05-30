@@ -36,6 +36,10 @@ const authSubmitButton = document.querySelector("#authSubmitButton");
 const authMessage = document.querySelector("#authMessage");
 const authTabs = document.querySelectorAll(".auth-tab");
 const closeAuthButtons = document.querySelectorAll("[data-close-auth]");
+const feedbackForm = document.querySelector("#feedbackForm");
+const feedbackEmail = document.querySelector("#feedbackEmail");
+const feedbackSubmit = document.querySelector("#feedbackSubmit");
+const feedbackStatus = document.querySelector("#feedbackStatus");
 
 let selectedPlan = "";
 let authMode = "signup";
@@ -120,6 +124,9 @@ function setAccount(account) {
   if (account) {
     state.questionsUsed = Number(account.questionsUsed) || 0;
     localStorage.setItem(LAST_ACCOUNT_EMAIL_KEY, account.email);
+    if (feedbackEmail && !feedbackEmail.value) {
+      feedbackEmail.value = account.email;
+    }
   }
 
   updateInterface();
@@ -321,6 +328,55 @@ async function handleCheckoutReturn() {
   url.searchParams.delete("checkout");
   url.searchParams.delete("session_id");
   window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash || "#chat"}`);
+}
+
+function setFeedbackStatus(message, type = "success") {
+  if (!feedbackStatus) return;
+
+  feedbackStatus.textContent = message;
+  feedbackStatus.classList.toggle("error", type === "error");
+  feedbackStatus.hidden = false;
+}
+
+async function submitFeedback(event) {
+  event.preventDefault();
+
+  const formData = new FormData(feedbackForm);
+  const payload = {
+    email: formData.get("email"),
+    message: formData.get("message"),
+    name: formData.get("name"),
+    page: window.location.href,
+    rating: formData.get("rating"),
+    website: formData.get("website"),
+  };
+
+  if (!String(payload.message || "").trim()) {
+    setFeedbackStatus("Write a short message before sending.", "error");
+    return;
+  }
+
+  feedbackSubmit.disabled = true;
+  feedbackSubmit.textContent = "Sending...";
+  feedbackStatus.hidden = true;
+
+  try {
+    const data = await requestJson("/api/feedback", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    feedbackForm.reset();
+    if (state.account && feedbackEmail) {
+      feedbackEmail.value = state.account.email;
+    }
+    setFeedbackStatus(data.message || "Thanks. Your feedback was sent.");
+  } catch (error) {
+    setFeedbackStatus(error.message || "Could not send feedback right now.", "error");
+  } finally {
+    feedbackSubmit.disabled = false;
+    feedbackSubmit.textContent = "Send feedback";
+  }
 }
 
 function formatNumber(number) {
@@ -788,6 +844,10 @@ logoutButton.addEventListener("click", async () => {
   updateInterface();
   addMessage("assistant", "You are logged out. The free demo limit on this browser is still separate from saved account usage.");
 });
+
+if (feedbackForm) {
+  feedbackForm.addEventListener("submit", submitFeedback);
+}
 
 updateInterface();
 updateApiStatus();

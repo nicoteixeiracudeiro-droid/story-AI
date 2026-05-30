@@ -11,6 +11,7 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const PASSWORD_ITERATIONS = 120_000;
 const DB_PATH = join(tmpdir(), "studyai-vercel-db.json");
 const STRIPE_WEBHOOK_TOLERANCE_SECONDS = 300;
+const FEEDBACK_MESSAGE_MAX_LENGTH = 1200;
 
 const PREMIUM_PLANS = {
   monthly: {
@@ -80,6 +81,7 @@ function isValidEmail(email) {
 
 function createEmptyDatabase() {
   return {
+    feedback: [],
     sessions: [],
     users: [],
   };
@@ -87,6 +89,7 @@ function createEmptyDatabase() {
 
 function normalizeDatabase(data) {
   return {
+    feedback: Array.isArray(data?.feedback) ? data.feedback : [],
     sessions: Array.isArray(data?.sessions) ? data.sessions : [],
     users: Array.isArray(data?.users) ? data.users : [],
   };
@@ -194,6 +197,20 @@ function toSupabaseSession(session) {
   };
 }
 
+function toSupabaseFeedback(feedback) {
+  return {
+    created_at: feedback.createdAt,
+    email: feedback.email || null,
+    id: feedback.id,
+    message: feedback.message,
+    name: feedback.name || null,
+    page: feedback.page || null,
+    rating: feedback.rating,
+    user_agent: feedback.userAgent || null,
+    user_id: feedback.userId || null,
+  };
+}
+
 async function loadDatabase() {
   if (!supabaseConfigured()) {
     return readDatabase();
@@ -254,6 +271,70 @@ async function deleteExpiredSessions() {
   await supabaseRequest(`studyai_sessions?expires_at=lte.${encodeURIComponent(new Date().toISOString())}`, {
     method: "DELETE",
   });
+}
+
+function cleanText(value, maxLength) {
+  return String(value || "").trim().slice(0, maxLength);
+}
+
+function normalizeRating(value) {
+  const rating = Number(value);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return 5;
+  return rating;
+}
+
+function createFeedbackEntry(payload, user, request) {
+  const email = normalizeEmail(payload.email || user?.email || "");
+  const message = cleanText(payload.message, FEEDBACK_MESSAGE_MAX_LENGTH);
+
+  if (!message || message.length < 5) {
+    const error = new Error("Write a little more feedback before sending.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (email && !isValidEmail(email)) {
+    const error = new Error("Use a real email address or leave the email box empty.");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return {
+    createdAt: new Date().toISOString(),
+    email,
+    id: randomUUID(),
+    message,
+    name: cleanText(payload.name, 80),
+    page: cleanText(payload.page, 300),
+    rating: normalizeRating(payload.rating),
+    userAgent: cleanText(request.headers["user-agent"], 300),
+    userId: user?.id || null,
+  };
+}
+
+async function saveFeedbackEntry(feedback) {
+  if (supabaseConfigured()) {
+    try {
+      await supabaseRequest("studyai_feedback", {
+        body: toSupabaseFeedback(feedback),
+        method: "POST",
+        prefer: "return=minimal",
+      });
+      return "supabase";
+    } catch (error) {
+      if (/studyai_feedback|PGRST|relation .* does not exist/i.test(error.message)) {
+        const setupError = new Error("Feedback storage needs the Supabase feedback table first.");
+        setupError.statusCode = 503;
+        throw setupError;
+      }
+      throw error;
+    }
+  }
+
+  const database = await readDatabase();
+  database.feedback = [feedback, ...database.feedback].slice(0, 500);
+  await writeDatabase(database);
+  return "local";
 }
 
 function hashPassword(password, salt = randomBytes(16).toString("hex"), iterations = PASSWORD_ITERATIONS) {
@@ -812,6 +893,34 @@ async function handleMeRequest(request, response) {
   }
 }
 
+async function handleFeedbackRequest(request, response) {
+  try {
+    const payload = await readJsonPayload(request);
+
+    if (String(payload.website || "").trim()) {
+      sendJson(response, 200, { ok: true, message: "Thanks for the feedback." });
+      return;
+    }
+
+    const { user } = await getRequestContext(request);
+    const feedback = createFeedbackEntry(payload, user, request);
+    const storage = await saveFeedbackEntry(feedback);
+
+    sendJson(response, 201, {
+      id: feedback.id,
+      message: "Thanks. Your feedback was sent.",
+      ok: true,
+      storage,
+    });
+  } catch (error) {
+    console.error(error);
+    sendJson(response, error.statusCode || 500, {
+      error: error.message || "Could not send feedback right now.",
+      ok: false,
+    });
+  }
+}
+
 async function handleStudyRequest(request, response) {
   try {
     const payload = await readJsonPayload(request);
@@ -987,6 +1096,11 @@ export default async function handler(request, response) {
 
   if (request.method === "GET" && apiPath === "auth/me") {
     await handleMeRequest(request, response);
+    return;
+  }
+
+  if (request.method === "POST" && apiPath === "feedback") {
+    await handleFeedbackRequest(request, response);
     return;
   }
 

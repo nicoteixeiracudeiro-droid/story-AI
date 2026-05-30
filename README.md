@@ -18,6 +18,7 @@ User accounts now work in the backend:
 - Supabase/Postgres database in production when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are configured
 - local JSON database at `data/studyai-db.json` for local development without Supabase
 - free question usage saved per account
+- feedback form submissions saved in Supabase when `studyai_feedback` exists
 
 The local JSON database is only for development. Production should use Supabase/Postgres so accounts, sessions, and free question limits do not disappear between deployments.
 
@@ -29,6 +30,7 @@ Stripe Checkout is now wired into the backend for test mode. Premium buttons req
 - `style.css` - full visual design and responsive layout
 - `script.js` - frontend chat flow, account modal, backend account state, prompt chips, browser fallback answers
 - `server.mjs` - local backend, static file server, OpenAI `/api/study`, auth endpoints, Stripe Checkout, Stripe webhook
+- `supabase-feedback.sql` - SQL for the production feedback table
 - `.env.example` - example environment variables for API setup
 - `terms.html` - starter terms page for parent/legal review
 - `privacy.html` - starter privacy page for parent/legal review
@@ -96,6 +98,13 @@ Important: Vercel uses Supabase for accounts when the two Supabase environment v
 - `POST /api/checkout` - creates a Stripe Checkout Session for a logged-in user
 - `POST /api/checkout/confirm` - verifies a returned Stripe Checkout Session with Stripe
 - `POST /api/stripe/webhook` - Stripe webhook endpoint for `checkout.session.completed`
+- `POST /api/feedback` - saves visitor feedback from the feedback form
+
+## Add Supabase Feedback Storage
+
+Run the SQL in `supabase-feedback.sql` inside the Supabase SQL editor. This creates the `studyai_feedback` table used by `/api/feedback`.
+
+The browser never receives the Supabase service role key. Feedback goes through the StudyAI backend first.
 
 ## Add The OpenAI API
 

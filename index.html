@@ -25,7 +25,7 @@
     />
     <link rel="canonical" href="https://studyai.cards/" />
     <title>StudyAI - AI Study Tutor for Homework and Exams</title>
-    <link rel="stylesheet" href="style.css?v=16" />
+    <link rel="stylesheet" href="style.css?v=19" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -79,6 +79,7 @@
         <a href="#chat">Try it</a>
         <a href="#method">Method</a>
         <a href="#trust">Trust</a>
+        <a href="#feedback">Feedback</a>
         <a href="#plans">Pricing</a>
       </nav>
 
@@ -401,6 +402,56 @@
         </div>
       </section>
 
+      <section id="feedback" class="feedback-section" aria-label="Feedback">
+        <div class="feedback-grid">
+          <div class="feedback-copy">
+            <p class="eyebrow">Student feedback</p>
+            <h2>Tell us what should be better.</h2>
+            <p>
+              Your feedback helps improve StudyAI answers, pricing, design, and the premium experience.
+            </p>
+            <div class="feedback-points" aria-label="Feedback examples">
+              <span>Was the answer clear?</span>
+              <span>Was anything confusing?</span>
+              <span>What should we add next?</span>
+            </div>
+          </div>
+
+          <form id="feedbackForm" class="feedback-form">
+            <div class="feedback-fields">
+              <label for="feedbackName">Name</label>
+              <input id="feedbackName" name="name" type="text" autocomplete="name" placeholder="Optional" />
+
+              <label for="feedbackEmail">Email</label>
+              <input id="feedbackEmail" name="email" type="email" autocomplete="email" placeholder="Optional" />
+
+              <label for="feedbackRating">Rating</label>
+              <select id="feedbackRating" name="rating">
+                <option value="5">5 - Great</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Okay</option>
+                <option value="2">2 - Confusing</option>
+                <option value="1">1 - Needs work</option>
+              </select>
+
+              <label for="feedbackMessage">Feedback</label>
+              <textarea
+                id="feedbackMessage"
+                name="message"
+                rows="5"
+                maxlength="1200"
+                placeholder="Tell us what you liked, what was confusing, or what StudyAI should improve."
+                required
+              ></textarea>
+              <input id="feedbackWebsite" name="website" type="text" autocomplete="off" tabindex="-1" aria-hidden="true" />
+            </div>
+
+            <button id="feedbackSubmit" type="submit">Send feedback</button>
+            <p id="feedbackStatus" class="feedback-status" aria-live="polite" hidden></p>
+          </form>
+        </div>
+      </section>
+
       <section class="closing-section" aria-label="Call to action">
         <div>
           <p class="eyebrow">Ready to study with less stress?</p>
@@ -463,6 +514,6 @@
       </section>
     </div>
 
-    <script src="script.js?v=18"></script>
+    <script src="script.js?v=19"></script>
   </body>
 </html>
